@@ -84,3 +84,30 @@ button:active{opacity:.6}
 .set button{padding:8px 14px;border-radius:10px;background:#24242c;font-weight:600;font-size:14px;white-space:nowrap}
 
 #toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#2c2c36;padding:12px 18px;border-radius:12px;font-size:14px;z-index:30;max-width:90vw;text-align:center}
+
+/* Anpassning efter skärm: smala telefoner, vanliga iPhone, och breda/uppfällda skärmar */
+@media (max-width:359px){
+  .card{width:100px}.card .img{width:100px;height:148px}
+  .card.wide{width:190px}.card.wide .img{width:190px;height:107px}
+  .sheet-btns button{flex-basis:100%}
+}
+@media (min-width:600px){
+  .card{width:140px}.card .img{width:140px;height:207px}
+  .card.wide{width:280px}.card.wide .img{width:280px;height:158px}
+  .row h3{font-size:19px}
+  .search,.wide-btn{max-width:720px}
+  .wide-btn{width:calc(100% - 32px)}
+  .sheet-card{left:50%;right:auto;width:min(760px,94vw);transform:translateX(-50%);bottom:3vh;max-height:94vh;border-radius:18px}
+  .sheet-hero{height:300px}
+  .sheet-btns button{flex:1 1 30%}
+  #s-desc{font-size:16px;max-width:640px}
+}
+@media (min-width:900px){
+  .card{width:164px}.card .img{width:164px;height:243px}
+  .card.wide{width:320px}.card.wide .img{width:320px;height:180px}
+}
+/* Liggande telefon: lägre bild så att knapparna syns direkt */
+@media (orientation:landscape) and (max-height:500px){
+  .sheet-hero{height:130px}
+  .sheet-card{max-height:96vh}
+}
