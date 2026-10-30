@@ -255,20 +255,21 @@
 
   function buildSheet() {
     var it = sheetItem; $("s-btns").innerHTML = "";
+    // Spela i telefonen är huvudknappen; tv-knapparna visas bara när en tv är kopplad
     if (it.type === "movie") {
-      btn("▶  Spela på tv:n", function () { send({ c: "play", item: slim(it) }, "Startar på tv:n…"); closeSheet(); }, true);
-      btn("📱  Titta i telefonen", function () { phoneSources(it); });
-      btn("Öppna på tv:n", function () { send({ c: "open", item: slim(it) }, "Öppnad på tv:n"); closeSheet(); });
+      btn("▶  Spela", function () { phoneSources(it); }, true);
+      if (topic) btn("📺  Spela på tv:n", function () { send({ c: "play", item: slim(it) }, "Startar på tv:n…"); closeSheet(); });
+      if (topic) btn("Öppna på tv:n", function () { send({ c: "open", item: slim(it) }, "Öppnad på tv:n"); closeSheet(); });
     } else {
       var eps = episodes(), target = it.season ? { season: it.season, episode: it.episode } :
         it.nextEp ? { season: it.nextEp.season, episode: it.nextEp.number } : eps[0] ? { season: eps[0].season, episode: eps[0].episode } : null;
-      if (target) btn("▶  " + epCode(target.season, target.episode) + " på tv:n", function () {
-        send({ c: "play", item: slim({ type: "series", id: it.id, name: it.name, trakt: it.trakt, season: target.season, episode: target.episode }) }, "Startar på tv:n…"); closeSheet();
-      }, true);
-      if (target) btn("📱  " + epCode(target.season, target.episode) + " i telefonen", function () {
+      if (target) btn("▶  Spela " + epCode(target.season, target.episode), function () {
         phoneSources({ type: "series", id: it.id, name: it.name, season: target.season, episode: target.episode });
+      }, true);
+      if (target && topic) btn("📺  " + epCode(target.season, target.episode) + " på tv:n", function () {
+        send({ c: "play", item: slim({ type: "series", id: it.id, name: it.name, trakt: it.trakt, season: target.season, episode: target.episode }) }, "Startar på tv:n…"); closeSheet();
       });
-      btn("Öppna på tv:n", function () { send({ c: "open", item: slim(it) }, "Öppnad på tv:n"); closeSheet(); });
+      if (topic) btn("Öppna på tv:n", function () { send({ c: "open", item: slim(it) }, "Öppnad på tv:n"); closeSheet(); });
     }
     if (Trakt.connected()) {
       btn("+ Watchlist", function () { Trakt.addToWatchlist(it).then(function () { toast("Tillagd i watchlist"); }, function () { toast("Kunde inte nå Trakt"); }); });
@@ -293,14 +294,18 @@
         var row = document.createElement("div"); row.className = "ep";
         row.innerHTML = '<span class="n">' + v.episode + '</span><span class="t">' + esc(v.name || v.title || "Avsnitt " + v.episode) + "</span>" +
           (sheetWatched[v.season + ":" + v.episode] ? '<span class="w">✓</span>' : "");
-        var b = document.createElement("button"); b.textContent = "▶ Tv";
-        b.onclick = function () {
-          send({ c: "play", item: slim({ type: "series", id: it.id, name: it.name, trakt: it.trakt, season: v.season, episode: v.episode, epTitle: v.name }) }, "Startar " + epCode(v.season, v.episode) + " på tv:n…");
-          closeSheet();
-        };
-        var b2 = document.createElement("button"); b2.textContent = "📱"; b2.style.marginLeft = "6px";
+        var b2 = document.createElement("button"); b2.textContent = "▶ Spela";
         b2.onclick = function () { phoneSources({ type: "series", id: it.id, name: it.name, season: v.season, episode: v.episode }); };
-        row.appendChild(b); row.appendChild(b2); box.appendChild(row);
+        row.appendChild(b2);
+        if (topic) {
+          var b = document.createElement("button"); b.textContent = "📺"; b.style.marginLeft = "6px";
+          b.onclick = function () {
+            send({ c: "play", item: slim({ type: "series", id: it.id, name: it.name, trakt: it.trakt, season: v.season, episode: v.episode, epTitle: v.name }) }, "Startar " + epCode(v.season, v.episode) + " på tv:n…");
+            closeSheet();
+          };
+          row.appendChild(b);
+        }
+        box.appendChild(row);
       });
     }
     draw();
@@ -348,6 +353,7 @@
   });
 
   /* ---------- Flikar och fjärrkontroll ---------- */
+  if (!topic) { var tabs = document.querySelector(".tabs"); if (tabs) tabs.style.visibility = "hidden"; }   // ingen tv kopplad
   document.querySelectorAll(".tabs button").forEach(function (b) {
     b.onclick = function () {
       document.querySelectorAll(".tabs button").forEach(function (x) { x.classList.toggle("on", x === b); });
